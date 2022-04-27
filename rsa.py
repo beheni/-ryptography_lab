@@ -8,10 +8,13 @@ class Encryption:
         self.num2 = 67
         self.open1 = self.num1*self.num2
         self.open2 = (self.num1-1)*(self.num2-1)
-        self.coprime = 0
-        self.aplh = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzАБВГҐДЕЄЖЗИІЇЙКЛМНЛОПРСТУФХЦЧШЩЬЮЯабвгґдеєжзиіїйклмнопрстуфхцчшщьюя0123456789.,?!:;()'
+        self.coprime = 17
+        self.splits=0
+        self.alph = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzАБВГҐДЕЄЖЗИІЇЙКЛМНЛОПРСТУФХЦЧШЩЬЮЯабвгґдеєжзиіїйклмнопрстуфхцчшщьюя0123456789.,?!:;()'
+        self.length=str(len(self.alph))
         self.encoded = ""
         self.hash_str = None
+        self.order=[]
 
     def encrypt(self):
         coprimes = []
@@ -30,56 +33,57 @@ class Encryption:
         return num1
 
     def euclid(self):
-        order = []
         div = self.open2//self.coprime
         mod = self.open2 % self.coprime
-        order.append((div, mod))
+        self.order.append([self.open2, div, self.coprime, mod])
+        prev_div=self.coprime
         while mod != 1:
-            div = div//mod
-            mod = div % mod
-            order.append((div, mod))
-        return order
+            storage=prev_div
+            div = prev_div//mod
+            temp=mod
+            mod = prev_div % mod
+            prev_div=temp
+            self.order.append([storage, div, prev_div, mod])
+        # for ele in self.order:
+            # ele[3] = f'{ele[0]} - {ele[1]} * {ele[2]}'
+        # order=order[::-1]
+
 
     def amount_of_splits(self):
         i = 0
         while True:
             try:
-                if int(i*self.type) < self.open1 < int((i+1)*self.type):
+                if int(i*self.length) < self.open1 < int((i+1)*self.length):
                     break
             except ValueError:
-                if 0 < self.open1 < int((i+1)*self.type):
+                if 0 < self.open1 < int((i+1)*self.length):
                     break
             i += 1
-        return 2*i
+        self.splits = 3*i
+        return self.splits
+
 
     def codestring(self):
-        alph = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-        alph_c = 'АБВГҐДЕЄЖЗИІЇЙКЛМНОПРСТУФХЦЧШЩЬЮЯ'
         for letter in self.string:
-            # letter=letter.upper()
-            # print(letter)
-            # if letter in alph:
-            #     typ='eng'
-            # else:
-            #     typ='ukr'
-            if letter in 'ABCDEFGHIJ' and self.type == '25':
-                self.encoded += '0'+str(alph.index(letter))
-            elif self.type == '25':
-                self.encoded += str(alph.index(letter))
-            if letter in 'АБВГҐДЕЄЖЗ' and self.type == '32':
-                self.encoded += '0'+str(alph_c.index(letter))
-            elif self.type == '32':
-                self.encoded += str(alph_c.index(letter))
+            if letter in self.alph[:10]:
+                self.encoded += '0'+str(self.alph.index(letter))
+            else:
+                self.encoded += str(self.alph.index(letter))
         return self.encoded
 
     def hash(self):
-        hash = sha256(bytes(self.encoded, 'utf-8'))
-        self.hash_str = hash.hexdigest()
+        hashed = sha256(bytes(self.encoded, 'utf-8'))
+        self.hash_str = hashed.hexdigest()
 
+    def __str__(self) -> str:
+        string=''
+        for ele in self.order:
+            string+=f'{ele[0]} = {ele[1]} * {ele[2]} + {ele[3]}\n'
+        return string
 
 message = Encryption('КУПИ')
-# print(message.codestring())
-# print(message.amount_of_splits())
-
+print(message.codestring())
 message.hash()
 print(message.hash_str)
+message.euclid()
+print(message.order)
