@@ -4,18 +4,17 @@ import random
 
 class Encryption:
     def __init__(self, string) -> None:
-        self.string = string.upper()
+        self.string = string
         self.num1 = int(self.random_prime())
         self.num2 = int(self.random_prime())
-        self.open1 = self.num1*self.num2
+        self.open1_n = self.num1*self.num2
         self.open2 = (self.num1-1)*(self.num2-1)
-        self.coprime = 17
+        self.coprime_e = 1
         self.splits = 0
-        self.alph = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzАБВГҐДЕЄЖЗИІЇЙКЛМНЛОПРСТУФХЦЧШЩЬЮЯабвгґдеєжзиіїйклмнопрстуфхцчшщьюя0123456789.,?!:;()'
+        self.alph = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzАБВГҐДЕЄЖЗИІЇЙКЛМНЛОПРСТУФХЦЧШЩЬЮЯабвгґдеєжзиіїйклмнопрстуфхцчшщьюя123456789*&^%.,!:;(#@)₴?$0'
         self.length = str(len(self.alph))
         self.encoded = ""
         self.hash_str = None
-        self.order = []
 
     def encrypt(self):
         coprimes = []
@@ -23,7 +22,9 @@ class Encryption:
             nsd = self.nsd(i)
             if nsd == 1 and i % 2 == 1:
                 coprimes.append(i)
-        self.coprime = coprimes[5]
+                if len(coprimes) == 5:
+                    break
+        self.coprime_e = coprimes[-1]
 
     def nsd(self, num):
         num1 = self.open2
@@ -33,30 +34,14 @@ class Encryption:
             num1 = temp
         return num1
 
-    def euclid(self):
-        div = self.open2//self.coprime
-        mod = self.open2 % self.coprime
-        self.order.append([self.open2, div, self.coprime, mod])
-        prev_div = self.coprime
-        while mod != 1:
-            storage = prev_div
-            div = prev_div//mod
-            temp = mod
-            mod = prev_div % mod
-            prev_div = temp
-            self.order.append([storage, div, prev_div, mod])
-        # for ele in self.order:
-            # ele[3] = f'{ele[0]} - {ele[1]} * {ele[2]}'
-        # order=order[::-1]
-
     def amount_of_splits(self):
         i = 0
         while True:
             try:
-                if int(i*self.length) < self.open1 < int((i+1)*self.length):
+                if int(i*self.length) < self.open1_n < int((i+1)*self.length):
                     break
             except ValueError:
-                if 0 < self.open1 < int((i+1)*self.length):
+                if 0 < self.open1_n < int((i+1)*self.length):
                     break
             i += 1
         self.splits = 3*i
@@ -74,12 +59,6 @@ class Encryption:
         hashed = sha256(bytes(self.encoded, 'utf-8'))
         self.hash_str = hashed.hexdigest()
 
-    def __str__(self) -> str:
-        string = ''
-        for ele in self.order:
-            string += f'{ele[0]} = {ele[1]} * {ele[2]} + {ele[3]}\n'
-        return string
-
     @staticmethod
     def random_prime():
         with open("primes.txt", 'r') as file_primes:
@@ -87,13 +66,70 @@ class Encryption:
         return random.choice(primes)
 
     def euclid(self):
-        for x in range(1, self.open2):
-                if (((self.coprime % self.open2) * (x % self.open2)) % self.open2 == 1):
-                    return x
-        return -1
+        # for x in range(1, self.open2):
+        #         if (((self.coprime_e % self.open2) * (x % self.open2)) % self.open2 == 1):
+        #             return x
+        # return -1
+        m0 = self.open2
+        a = self.coprime_e
+        m = self.open2
+        y = 0
+        x = 1
+
+        if (self.open2 == 1):
+            return 0
+
+        while (a > 1):
+
+            # q is quotient
+            q = a // m
+
+            t = m
+
+            # m is remainder now, process
+            # same as Euclid's algo
+            m = a % m
+            a = t
+            t = y
+
+            # Update x and y
+            y = x - q * y
+            x = t
+
+        # Make x positive
+        if (x < 0):
+            x = x + m0
+
+        return x
+
+    def keys(self):
+        n = self.open1_n
+        e = self.coprime_e
+        d = self.euclid()
+        return n, e, d
+
+    def message_split(self):
+        string = self.encoded
+        chunks = [string[i:i+self.splits]
+                  for i in range(0, len(string), self.splits)]
+        while len(chunks[-1]) != self.splits:
+            chunks[-1] += '0'
+        return chunks
+
+    @staticmethod
+    def modular_pow(b, n, m):
+        x = 1
+        power = b%m
+        k = bin(n)[2:]
+        list_bin = [int(i) for i in k][::-1]
+        for i in range(0, len(k)):
+            if list_bin[i] == 1:
+                x = (x*power)%m
+            power = (power*power)%m
+        return x
 
 
-message = Encryption('КУПИ')
+message = Encryption('КУПИjhgkjdhfgdkhkgdjgh')
 # print(message.codestring())
 # message.hash()
 # print(message.hash_str)
@@ -102,3 +138,11 @@ message = Encryption('КУПИ')
 # message.random_prime()
 print(message.num1)
 print(message.num2)
+print(message.length)
+message.encrypt()
+print(message.euclid())
+print(message.keys())
+print(message.amount_of_splits())
+message.codestring()
+print(message.encoded)
+print(message.message_split())
