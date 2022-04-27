@@ -1,20 +1,20 @@
 from hashlib import sha256
-
+import random
 
 class Encryption:
     def __init__(self, string) -> None:
         self.string = string.upper()
-        self.num1 = 53
-        self.num2 = 67
+        self.num1 = int(self.random_prime())
+        self.num2 = int(self.random_prime())
         self.open1 = self.num1*self.num2
         self.open2 = (self.num1-1)*(self.num2-1)
         self.coprime = 17
-        self.splits=0
+        self.splits = 0
         self.alph = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzАБВГҐДЕЄЖЗИІЇЙКЛМНЛОПРСТУФХЦЧШЩЬЮЯабвгґдеєжзиіїйклмнопрстуфхцчшщьюя0123456789.,?!:;()'
-        self.length=str(len(self.alph))
+        self.length = str(len(self.alph))
         self.encoded = ""
         self.hash_str = None
-        self.order=[]
+        self.order = []
 
     def encrypt(self):
         coprimes = []
@@ -36,18 +36,17 @@ class Encryption:
         div = self.open2//self.coprime
         mod = self.open2 % self.coprime
         self.order.append([self.open2, div, self.coprime, mod])
-        prev_div=self.coprime
+        prev_div = self.coprime
         while mod != 1:
-            storage=prev_div
+            storage = prev_div
             div = prev_div//mod
-            temp=mod
+            temp = mod
             mod = prev_div % mod
-            prev_div=temp
+            prev_div = temp
             self.order.append([storage, div, prev_div, mod])
         # for ele in self.order:
             # ele[3] = f'{ele[0]} - {ele[1]} * {ele[2]}'
         # order=order[::-1]
-
 
     def amount_of_splits(self):
         i = 0
@@ -62,7 +61,6 @@ class Encryption:
         self.splits = 3*i
         return self.splits
 
-
     def codestring(self):
         for letter in self.string:
             if letter in self.alph[:10]:
@@ -76,14 +74,25 @@ class Encryption:
         self.hash_str = hashed.hexdigest()
 
     def __str__(self) -> str:
-        string=''
+        string = ''
         for ele in self.order:
-            string+=f'{ele[0]} = {ele[1]} * {ele[2]} + {ele[3]}\n'
+            string += f'{ele[0]} = {ele[1]} * {ele[2]} + {ele[3]}\n'
         return string
 
+    @staticmethod
+    def random_prime():
+        with open("primes.txt", 'r') as file_primes:
+            primes = (file_primes.read().split("\n"))
+        return random.choice(primes)
+
+
+
 message = Encryption('КУПИ')
-print(message.codestring())
-message.hash()
-print(message.hash_str)
-message.euclid()
-print(message.order)
+# print(message.codestring())
+# message.hash()
+# print(message.hash_str)
+# message.euclid()
+# print(message.order)
+# message.random_prime()
+print(message.num1)
+print(message.num2)
