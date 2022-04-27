@@ -1,6 +1,7 @@
 from hashlib import sha256
 import random
 
+
 class Encryption:
     def __init__(self, string) -> None:
         self.string = string.upper()
@@ -85,6 +86,11 @@ class Encryption:
             primes = (file_primes.read().split("\n"))
         return random.choice(primes)
 
+    def euclid(self):
+        for x in range(1, self.open2):
+                if (((self.coprime % self.open2) * (x % self.open2)) % self.open2 == 1):
+                    return x
+        return -1
 
 
 message = Encryption('КУПИ')
