@@ -1,6 +1,8 @@
 from hashlib import sha256
 import random
 
+from test import modular_pow
+
 
 class Encryption:
     def __init__(self, string) -> None:
@@ -11,10 +13,12 @@ class Encryption:
         self.open2 = (self.num1-1)*(self.num2-1)
         self.coprime_e = 1
         self.splits = 0
+        self.private_key_d = self.euclid()
         self.alph = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzАБВГҐДЕЄЖЗИІЇЙКЛМНЛОПРСТУФХЦЧШЩЬЮЯабвгґдеєжзиіїйклмнопрстуфхцчшщьюя123456789*&^%.,!:;(#@)₴?$0'
         self.length = str(len(self.alph))
         self.encoded = ""
         self.hash_str = None
+        self.encrypted = None
 
     def encrypt(self):
         coprimes = []
@@ -102,12 +106,6 @@ class Encryption:
 
         return x
 
-    def keys(self):
-        n = self.open1_n
-        e = self.coprime_e
-        d = self.euclid()
-        return n, e, d
-
     def message_split(self):
         string = self.encoded
         chunks = [string[i:i+self.splits]
@@ -119,15 +117,25 @@ class Encryption:
     @staticmethod
     def modular_pow(b, n, m):
         x = 1
-        power = b%m
+        power = b % m
         k = bin(n)[2:]
         list_bin = [int(i) for i in k][::-1]
         for i in range(0, len(k)):
             if list_bin[i] == 1:
-                x = (x*power)%m
-            power = (power*power)%m
+                x = (x*power) % m
+            power = (power*power) % m
         return x
 
+    def encryption(self):
+        mi = self.message_split()
+        encrypted = [modular_pow(
+            int(m), self.coprime_e, self.open1_n) for m in mi]
+        self.encrypted = encrypted
+
+    def decryption(self):
+        ci = self.encrypted
+        decrypted = [modular_pow(c, self.private_key_d, self.open1_n) for c in ci]
+        return decrypted
 
 message = Encryption('КУПИjhgkjdhfgdkhkgdjgh')
 # print(message.codestring())
@@ -141,8 +149,10 @@ print(message.num2)
 print(message.length)
 message.encrypt()
 print(message.euclid())
-print(message.keys())
+# print(message.keys())
 print(message.amount_of_splits())
 message.codestring()
 print(message.encoded)
 print(message.message_split())
+print(message.encryption())
+print(message.decryption())
