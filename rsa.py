@@ -62,10 +62,6 @@ class Encryption:
         self.hash_str = hashed.hexdigest()
 
     def euclid(self):
-        # for x in range(1, self.open2):
-        #         if (((self.coprime_e % self.open2) * (x % self.open2)) % self.open2 == 1):
-        #             return x
-        # return -1
         m0 = self.open2
         a = self.coprime_e
         m = self.open2
@@ -76,23 +72,17 @@ class Encryption:
             return 0
 
         while (a > 1):
-
-            # q is quotient
             q = a // m
 
             t = m
 
-            # m is remainder now, process
-            # same as Euclid's algo
             m = a % m
             a = t
             t = y
 
-            # Update x and y
             y = x - q * y
             x = t
 
-        # Make x positive
         if (x < 0):
             x = x + m0
 
@@ -103,7 +93,7 @@ class Encryption:
         chunks = [string[i:i+self.splits]
                   for i in range(0, len(string), self.splits)]
         while len(chunks[-1]) != self.splits:
-            chunks[-1] += '0'
+            chunks[-1] += '146'
         return chunks
 
     def encryption(self):
