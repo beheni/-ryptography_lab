@@ -1,9 +1,5 @@
 from hashlib import sha256
 import random
-
-from test import modular_pow
-
-
 class Encryption:
     def __init__(self, string) -> None:
         self.string = string
@@ -54,6 +50,8 @@ class Encryption:
     def codestring(self):
         for letter in self.string:
             if letter in self.alph[:10]:
+                self.encoded += '00'+str(self.alph.index(letter))
+            if letter in self.alph[11:100]:
                 self.encoded += '0'+str(self.alph.index(letter))
             else:
                 self.encoded += str(self.alph.index(letter))
@@ -62,12 +60,6 @@ class Encryption:
     def hash(self):
         hashed = sha256(bytes(self.encoded, 'utf-8'))
         self.hash_str = hashed.hexdigest()
-
-    @staticmethod
-    def random_prime():
-        with open("primes.txt", 'r') as file_primes:
-            primes = (file_primes.read().split("\n"))
-        return random.choice(primes)
 
     def euclid(self):
         # for x in range(1, self.open2):
@@ -114,6 +106,17 @@ class Encryption:
             chunks[-1] += '0'
         return chunks
 
+    def encryption(self):
+        mi = self.message_split()
+        encrypted = [Encryption.modular_pow(
+            int(m), self.coprime_e, self.open1_n) for m in mi]
+        self.encrypted = encrypted
+
+    def decryption(self):
+        ci = self.encrypted
+        decrypted = [Encryption.modular_pow(c, self.private_key_d, self.open1_n) for c in ci]
+        return decrypted
+
     @staticmethod
     def modular_pow(b, n, m):
         x = 1
@@ -126,16 +129,12 @@ class Encryption:
             power = (power*power) % m
         return x
 
-    def encryption(self):
-        mi = self.message_split()
-        encrypted = [modular_pow(
-            int(m), self.coprime_e, self.open1_n) for m in mi]
-        self.encrypted = encrypted
+    @staticmethod
+    def random_prime():
+        with open("primes.txt", 'r') as file_primes:
+            primes = (file_primes.read().split("\n"))
+        return random.choice(primes)
 
-    def decryption(self):
-        ci = self.encrypted
-        decrypted = [modular_pow(c, self.private_key_d, self.open1_n) for c in ci]
-        return decrypted
 
 message = Encryption('КУПИjhgkjdhfgdkhkgdjgh')
 # print(message.codestring())
