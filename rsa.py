@@ -1,6 +1,7 @@
 from hashlib import sha256
 
 
+
 class Encryption:
     def __init__(self, string) -> None:
         self.string = string.upper()
@@ -80,7 +81,6 @@ class Encryption:
         for ele in self.order:
             string += f'{ele[0]} = {ele[1]} * {ele[2]} + {ele[3]}\n'
         return string
-
 
 message = Encryption('КУПИ')
 print(message.codestring())
