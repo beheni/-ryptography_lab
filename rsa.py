@@ -1,5 +1,7 @@
 from hashlib import sha256
 import random
+
+
 class Encryption:
     def __init__(self, string) -> None:
         self.string = string
@@ -9,12 +11,14 @@ class Encryption:
         self.open2 = (self.num1-1)*(self.num2-1)
         self.coprime_e = 1
         self.splits = 0
-        self.private_key_d = self.euclid()
-        self.alph = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzАБВГҐДЕЄЖЗИІЇЙКЛМНЛОПРСТУФХЦЧШЩЬЮЯабвгґдеєжзиіїйклмнопрстуфхцчшщьюя123456789*&^%.,!:;(#@)₴?$0'
+        self.private_key_d = 1
+        self.alph = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzАБВГҐДЕЄЖЗИІЇЙКЛМНЛОПРСТУФХЦЧШЩЬЮЯабвгґдеєжзиіїйклмнопрстуфхцчшщьюя123456789*&^%.,!:;(#@)₴?$0 '
         self.length = str(len(self.alph))
         self.encoded = ""
         self.hash_str = None
+        self.hash_dec = None
         self.encrypted = None
+        self.decrypted = ""
 
     def encrypt(self):
         coprimes = []
@@ -57,15 +61,21 @@ class Encryption:
                 self.encoded += str(self.alph.index(letter))
         return self.encoded
 
+    def decodestring(self):
+        former_string = ""
+        decrypted_string = self.decrypted
+        for char in range(0, len(decrypted_string), 3):
+            char = int(decrypted_string[char:char+3:])
+            former_string += self.alph[char]
+        return former_string
+
     def hash(self):
-        hashed = sha256(bytes(self.encoded, 'utf-8'))
+        hashed = sha256(bytes(self.string, 'utf-8'))
+        hashed_dec = sha256(bytes(self.decrypted, 'utf-8'))
         self.hash_str = hashed.hexdigest()
+        self.hash_dec = hashed.hexdigest()
 
     def euclid(self):
-        # for x in range(1, self.open2):
-        #         if (((self.coprime_e % self.open2) * (x % self.open2)) % self.open2 == 1):
-        #             return x
-        # return -1
         m0 = self.open2
         a = self.coprime_e
         m = self.open2
@@ -76,34 +86,27 @@ class Encryption:
             return 0
 
         while (a > 1):
-
-            # q is quotient
             q = a // m
 
             t = m
-
-            # m is remainder now, process
-            # same as Euclid's algo
             m = a % m
             a = t
             t = y
 
-            # Update x and y
             y = x - q * y
             x = t
 
-        # Make x positive
         if (x < 0):
             x = x + m0
 
-        return x
+        self.private_key_d = x
 
     def message_split(self):
         string = self.encoded
         chunks = [string[i:i+self.splits]
                   for i in range(0, len(string), self.splits)]
         while len(chunks[-1]) != self.splits:
-            chunks[-1] += '0'
+            chunks[-1] += '147'
         return chunks
 
     def encryption(self):
@@ -114,8 +117,16 @@ class Encryption:
 
     def decryption(self):
         ci = self.encrypted
-        decrypted = [Encryption.modular_pow(c, self.private_key_d, self.open1_n) for c in ci]
-        return decrypted
+        print(self.splits)
+        decrypted = [str(Encryption.modular_pow(
+            c, self.private_key_d, self.open1_n)) for c in ci]
+        for i in range(len(decrypted)):
+            while len(decrypted[i]) != self.splits:
+                decrypted[i] = '0'+decrypted[i]
+            while decrypted[i][-3:] == '147':
+                decrypted[i] = decrypted[i][:-3]
+
+        self.decrypted = "".join(decrypted)
 
     @staticmethod
     def modular_pow(b, n, m):
@@ -135,23 +146,3 @@ class Encryption:
             primes = (file_primes.read().split("\n"))
         return random.choice(primes)
 
-
-message = Encryption('КУПИjhgkjdhfgdkhkgdjgh')
-# print(message.codestring())
-# message.hash()
-# print(message.hash_str)
-# message.euclid()
-# print(message.order)
-# message.random_prime()
-print(message.num1)
-print(message.num2)
-print(message.length)
-message.encrypt()
-print(message.euclid())
-# print(message.keys())
-print(message.amount_of_splits())
-message.codestring()
-print(message.encoded)
-print(message.message_split())
-print(message.encryption())
-print(message.decryption())
