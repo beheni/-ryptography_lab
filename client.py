@@ -40,7 +40,7 @@ class Client:
             message = self.s.recv(1024).decode()
             message = message.split(',')[-1] 
             message = self.client.decode(message)
-            print(message)
+            print(f'To {self.username}: ', message)
             self.client.clear_decode()
             message=''
 
